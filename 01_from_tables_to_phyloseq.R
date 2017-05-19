@@ -7,7 +7,7 @@
 
 ## Before start, navigate to where your "otu count table", "taxa table", and "sample meta data" are and set it as your working directory. 
 ## For example, in my case (and my operating system is Mac OSX):
-setwd("/Users/fanyang/Box Sync/Mexico/paola/data_for_R/rk1") 
+setwd("~/Box sync/Mexico/paola/data_for_R/rk1") 
 ## this means from now on, all of the files I import are coming directly out of the `rk1` folder
 
 #####################
@@ -18,6 +18,9 @@ library(phyloseq)
 ####################
 # read in tables   #
 ####################
+
+## getting the otu table ready
+##############################
 # read in the otu count table from the working directory (ie. folder `rk1` in this case)
 otu <- read.delim("cdhit_otu_table_wide.txt", row.names=1) #`read.delim` takes tab delimited files and makes the first row as the table header
 # check otu table dimension
@@ -26,6 +29,8 @@ dim(otu)
     #> dim(otu) 
     #[1] 9875   36
 
+## getting the taxonomy table ready
+###################################
 # read in the taxa table from the working directory (ie. folder `rk1` in this case)
 tax <- read.delim("cdhit_taxa_table_w_repseq.txt") #`read.delim` takes tab delimited files and makes the first row as the table header. 
 # we also need to assign the `tax` table with row names that are the same as the `otu` table. 
@@ -40,24 +45,80 @@ head(otu[, 1:5])
     #OTU_100     5    2     0     2     4
     #OTU_1000    0    0     0     0     2
     #OTU_1001    0    0     0     0     2
+
 # let's a take a quick look at the first 6 rows (head) of the `tax1 table.
 head(tax)
+    #and we see column "OTUS" share the same information as the `otu` table row names.
+    #> head(tax)
+    #      repseq     OTUS   domain                phylum
+    #1    lp_0|10 OTU_3178 Bacteria        Proteobacteria
+    #2 lp_0|10002 OTU_2682 Bacteria        Proteobacteria
+    #3 lp_0|10003 OTU_9535 Bacteria unclassified_Bacteria
+    #4 lp_0|10004 OTU_2681 Bacteria unclassified_Bacteria
+    #5 lp_0|10029  OTU_505  Archaea        Woesearchaeota
+    #6 lp_0|10031 OTU_2233 Bacteria        Proteobacteria
+    #                        class                       order
+    #1         Gammaproteobacteria             Alteromonadales
+    #2         Gammaproteobacteria             Alteromonadales
+    #3       unclassified_Bacteria       unclassified_Bacteria
+    #4       unclassified_Bacteria       unclassified_Bacteria
+    #5 unclassified_Woesearchaeota unclassified_Woesearchaeota
+    #6         Alphaproteobacteria            Rhodospirillales
+    #                       family                          genus
+    #1            Alteromonadaceae  unclassified_Alteromonadaceae
+    #2            Alteromonadaceae                     Glaciecola
+    #3       unclassified_Bacteria          unclassified_Bacteria
+    #4       unclassified_Bacteria          unclassified_Bacteria
+    #5 unclassified_Woesearchaeota    unclassified_Woesearchaeota
+    #6           Rhodospirillaceae unclassified_Rhodospirillaceae
 
-
-# there is a column in your `tax` table with header "OTUS". Let's use this column for row names. 
+# let's use column "OTUS" for `tax` table row names. 
 row.names(tax)<-tax$OTUS 
+head(tax) # to double check the tax table
+    #now the tax table should look like this:
+    #> head(tax) # to double check the tax table
+    #             repseq     OTUS   domain                phylum
+    #OTU_3178    lp_0|10 OTU_3178 Bacteria        Proteobacteria
+    #OTU_2682 lp_0|10002 OTU_2682 Bacteria        Proteobacteria
+    #OTU_9535 lp_0|10003 OTU_9535 Bacteria unclassified_Bacteria
+    #OTU_2681 lp_0|10004 OTU_2681 Bacteria unclassified_Bacteria
+    #OTU_505  lp_0|10029  OTU_505  Archaea        Woesearchaeota
+    #OTU_2233 lp_0|10031 OTU_2233 Bacteria        Proteobacteria
+    #                               class                       order
+    #OTU_3178         Gammaproteobacteria             Alteromonadales
+    #OTU_2682         Gammaproteobacteria             Alteromonadales
+    #OTU_9535       unclassified_Bacteria       unclassified_Bacteria
+    #OTU_2681       unclassified_Bacteria       unclassified_Bacteria
+    #OTU_505  unclassified_Woesearchaeota unclassified_Woesearchaeota
+    #OTU_2233         Alphaproteobacteria            Rhodospirillales
+    #                              family                          genus
+    #OTU_3178            Alteromonadaceae  unclassified_Alteromonadaceae
+    #OTU_2682            Alteromonadaceae                     Glaciecola
+    #OTU_9535       unclassified_Bacteria          unclassified_Bacteria
+    #OTU_2681       unclassified_Bacteria          unclassified_Bacteria
+    #OTU_505  unclassified_Woesearchaeota    unclassified_Woesearchaeota
+    #OTU_2233           Rhodospirillaceae unclassified_Rhodospirillaceae
+
 # check taxa table dimension
 dim(tax) # output shows (number of rows, number of columns)
+    #output shows
+    #> dim(tax) # output shows (number of rows, number of columns)
+    #[1] 9875    8
 
 ## the number of rows of `otu` should equal to `tax`. 
 ## if not, make sure you used the right files
 
+## getting the metadata ready
+#############################
 # read in the sample metadata (ie. experimental design, treatments, sample id, etc.)
 si <- read.delim("rk1_meta_sample_data.txt")
 # check the dimension of the sample metadata
 dim(si) 
+    #we see the dimension of the sample metadata is:
+    #> dim(si) 
+    #[1] 34 12
 
-## the number of rows of `si` should equal to the number of columns in `otu`. 
+## the number of rows of `si` should equal to or less than the number of columns in `otu`. 
 ## if not, make sure you used the right files
 
 # your sample metadata should contain a column that shares the same sample ids as displayed in the `otu` header
