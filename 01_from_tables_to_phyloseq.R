@@ -118,9 +118,6 @@ dim(si)
     #> dim(si) 
     #[1] 34 12
 
-## the number of rows of `si` should equal to or less than the number of columns in `otu`. 
-## if not, make sure you used the right files
-
 # your sample metadata should contain a column that shares the same sample ids as displayed in the `otu` header
 # we can take a quick look at the first 6 rows and 5 columns of the `otu` table
 head(otu[, 1:5]) 
@@ -133,7 +130,7 @@ head(otu[, 1:5])
     #OTU_100     5    2     0     2     4
     #OTU_1000    0    0     0     0     2
     #OTU_1001    0    0     0     0     2
-# than the first 6 rows of the `si` table
+# then the first 6 rows of the `si` table
 head(si)
     # and we see:
     #> head(si)
@@ -159,40 +156,75 @@ head(si)
     #5        RK1    lp_4
     #6        RK1    lp_5
 
+# we can see that column "SAMPLES" in `si` shares the same information as the headers in `otu`. 
+# therefore, to match `si` with `otu`, we need to set the row names of `si` using column "SAMPLES". 
+row.names(si) <- si$SAMPLES
+# and we can see what `si` look like now:  
+head(si)
+    #> head(si)
+    #                          CIBNOR_id Sample_id Culture.media  Variable Replicate
+    #lp_0   Sediment_control_72h_E1_rep1     S_293  Sediment 72h   Control         1
+    #lp_1   Sediment_control_72h_E1_rep2     S_294  Sediment 72h   Control         2
+    #lp_2   Sediment_control_72h_E1_rep3     S_295  Sediment 72h   Control         3
+    #lp_3   Sediment_control_72h_E1_rep4     S_296  Sediment 72h   Control         4
+    #lp_4   Sediment_control_72h_E1_rep5     S_297  Sediment 72h   Control         5
+    #lp_5 Sediment_nutrients_72h_E1_rep1     S_298  Sediment 72h Nutrients         1
+    #               plate well DNA.concentration X..of.reads X..of.singletons
+    #lp_0 Magallon_Plate2   D9              12.2       32679             1125
+    #lp_1 Magallon_Plate2  D10              24.4        7990              781
+    #lp_2 Magallon_Plate2  D11              27.8       28417             1434
+    #lp_3 Magallon_Plate2  D12              17.8       28447             1044
+    #lp_4 Magallon_Plate2   E1              19.8       20787             1188
+    #lp_5 Magallon_Plate2   E2              16.7       19106              703
+    #     Experiment SAMPLES
+    #lp_0        RK1    lp_0
+    #lp_1        RK1    lp_1
+    #lp_2        RK1    lp_2
+    #lp_3        RK1    lp_3
+    #lp_4        RK1    lp_4
+    #lp_5        RK1    lp_5
+    #
 
+###########i#################
+## make a phyloseq object  ##
+#############################
+# now `otu`, `tax`, and `si` are ready to be put together to make a phyloseq object
 data.phy<-phyloseq(otu_table(as.matrix(otu),taxa_are_rows=T), tax_table(as.matrix(tax)))
-# check phyloseq object size
-print("the phyloseq object contains: ")
+    # explanation to the above code:  
+    # `otu_table` and `tax_table` are phyloseq functions to prepare `otu` and `tax` for phyloseq to understand. 
+    # both `otu_table` and `tax_table` can only read "matrix". That's why we used `as.matrix` function to convert data frames `otu` and `tax`.
+    # "taxa_are_rows=T" is a special option in function `otu_table`. It tells `otu_table` that the matrix ("as.matrix(otu)") have "OTU_0", "OTU_1", "OTU_2", etc. as row names in table `otu`. 
+
+# now we can add metadata table `si` to the phyloseq object `data.phy` we just created 
+sample_data(data.phy) <- si
+    # `sample_data` is a phyloseq function 
+    # the above command assign table `si` to phyloseq object `data.phy` as metadata using a phyloseq function `sample_data`
+
+# we can see what phyloseq object `data.phy` looks like:
 data.phy
-print("saving raw sequence phyloseq object to current directory ... ")
-saveRDS(data.phy, "raw_sequence_phyloseq.RDS")
+    #> data.phy
+    #phyloseq-class experiment-level object
+    #otu_table()   OTU Table:         [ 9875 taxa and 34 samples ]
+    #sample_data() Sample Data:       [ 34 samples by 12 sample variables ]
+    #tax_table()   Taxonomy Table:    [ 9875 taxa by 8 taxonomic ranks ]
 
-## get rid of any taxa that summing up to be less than 5 across all samples
-data.taxmin5.phy<-prune_taxa(taxa_sums(data.phy) >= 5, data.phy)
-data.taxmin5.phy<-prune_samples(sample_sums(data.taxmin5.phy) > 0, data.taxmin5.phy) #get rid of samples with all 0's, if it exists
-print("saving phyloseq object with taxa sum >= 5 across all samples to current directory ... ")
-saveRDS(data.taxmin5.phy, "taxsum_min5_sequence_phyloseq.RDS")
+# now the phyloseq object `data.phy` is ready for downstream analyses!
 
-## save the histogram of sample sequencing depth distribution
-print("Generating histogram on sample sequencing depth to current directory ... ")
-pdf("data.taxmin5.sequencing_depth_hist.pdf")
-hist(sample_sums(data.taxmin5.phy), breaks = nsamples(data.taxmin5.phy)/2)
-dev.off()
 
-## calculate Good's coverage for each sample
-si <- data.frame(sample_sums(data.taxmin5.phy)) #get sample sums
-names(si) <- "sample_sums"
-totu<-t(data.frame(otu_table(data.phy))) #transpose subsetted otu table so that samples are in row
+###########i###########################i############
+## save the created phyloseq object for later use ##
+#######################################i############
+# while it's good to be able to reproduce the phyloseq object `data.phy` from otu, taxonomy, and metadata tables every time, the code gets lengthy to start from the very beginning every single time. 
+# we can save phyloseq object `data.phy` to file and we can use it directly later. 
+# you can think of this as saving your progress in video games ;)
 
-si$n1 <- rowSums(totu == 1) #counts of singletons in each sample
-si$C <- 1-(si$n1 / si$sample_sums) #calculate Good's coverage
-si$SAMPLES <- row.names(si)
-## save the sample coverage information to file
-print("Saving the sample coverage information as a text file in current directory ... ")
-write.table(si, "data.taxmin5.sample_goods_coverage.txt", sep = "\t", quote = F, row.names = F)
+saveRDS(data.phy, "raw_data_phyloseq.RDS")
+    # `saveRDS` is the function
+    # it takes your phyloseq object `data.phy` and saves it as a .RDS file in your working directory. 
+    # "raw_data_phyloseq.RDS" is the file name I'm using here as an example. You can name it anything you want.
+    # you should see a new file named "raw_data_phyloseq.RDS" apears in your working directory after running the command. 
 
-## plot Good's coverage histogram
-print("Generating histogram on Good's estimated coverage to current directory ... ")
-pdf("data.taxmin5.goods_coverage_hist.pdf")
-hist(si$C, breaks = nrow(si)/2)
-dev.off()
+
+
+
+
