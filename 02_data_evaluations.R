@@ -36,9 +36,14 @@ data.phy
     #tax_table()   Taxonomy Table:    [ 9875 taxa by 8 taxonomic ranks ]
 
 ##################################################
-#   #
+# removing potentially errorness OTUs            #
 ##################################################
+# although we have already removed many low quality and errorness sequences (e.g., chimeras) during sequence processing. There could still be some left whe we made our OTU count table. 
+# these potentially errorness sequences would frequently be clustered into their own OTUs, resulting OTUs appeared to be rare (e.g., OTU_10 has a count of 1 in lp_11 only)
+# these OTUs could be really rare organisms. But for organisms this rare, they are not comparable among replicates of samples either. 
 
+test <- filter_taxa(data.phy, function(x) sum(x) == 1, T)
+head(otu_table(test))
 ## get rid of any taxa that summing up to be less than 5 across all samples
 data.taxmin5.phy<-prune_taxa(taxa_sums(data.phy) >= 5, data.phy)
 data.taxmin5.phy<-prune_samples(sample_sums(data.taxmin5.phy) > 0, data.taxmin5.phy) #get rid of samples with all 0's, if it exists
