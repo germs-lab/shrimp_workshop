@@ -74,8 +74,58 @@ ssum$C <- 1-(ssum$n1 / ssum$sample_sums) #calculate Good's coverage
 ## plot Good's coverage histogram
 hist(ssum$C, breaks = nrow(ssum)/2)
 
-## plot Good's coverage VS. sequencing depth
+# keeping in mind that C is determined based on how many OTUs with only 1 count (singletons) are there in your sample. 
+# therefore, when sequencing depth is shallow, it can give you a false good coverage
+
+## therefore, we should also plot Good's coverage VS. sequencing depth
 plot(C ~ sample_sums, data = ssum, ylim= c(0, 1))
 
-# and we can see that although some of the samples have <10k sequences, they were still well covered. 
+# as we can see that the 4 samples on the left have lower coverage and/or lower sequencing depth comparing to the other smaples.
+# personally, I would exclude these 4 samples in the downstream analyses
+
+##################################################################
+# excluding samples with low coverage and/or sequencing depth    #
+##################################################################
+# first, identify the 4 samples we would like to exclude
+# sort by sample_sums then by coverage
+ssum <- ssum[order(ssum$sample_sums, ssum$C), ]
+    # the first 4 are the samples we would like to exclude
+sample_to_exclude <- row.names(ssum)[1:4] 
+    #and we can see the samples in "sample_to_exclude" are:
+    #> sample_to_exclude
+    #[1] "lp_24" "lp_1"  "lp_10" "lp_19"
+
+# create a new phyloseq object that with the above 4 samples removed:
+data.mintax5.excluded.phy <- prune_samples(!sample_names(data.mintax5.phy) %in% sample_to_exclude, data.mintax5.phy)
+
+data.mintax5.excluded.phy
+    #we can see that the new phyloseq contains:
+    #> data.mintax5.excluded.phy
+    #phyloseq-class experiment-level object
+    #otu_table()   OTU Table:         [ 4944 taxa and 30 samples ]
+    #sample_data() Sample Data:       [ 30 samples by 12 sample variables ]
+    #tax_table()   Taxonomy Table:    [ 4944 taxa by 8 taxonomic ranks ]
+
+# sometimes, some OTUs may be only found in some of the samples. And when you remove the samples, it would result those OTUs to sum up to 0 across all samples left. 
+# phyloseq does not remove these all 0 OTUs automatically. But they could cause issues in later analyses. 
+# therefore, we should check it and remove OTUs that are all 0s after excluding some of the samples. 
+min(taxa_sums(data.mintax5.excluded.phy))
+    #> min(taxa_sums(data.mintax5.excluded.phy))
+    #[1] 0
+    #
+    # as we can see, there are OTUs summed up to 0 across all samples
+
+# to remove all 0 OTUs:
+data.mintax5.excluded.phy <- prune_taxa(taxa_sums(data.mintax5.excluded.phy) > 0, data.mintax5.excluded.phy)
+
+data.mintax5.excluded.phy
+    #and now the phyloseq object looks like this:
+    #> data.mintax5.excluded.phy
+    #phyloseq-class experiment-level object
+    #otu_table()   OTU Table:         [ 4942 taxa and 30 samples ]
+    #sample_data() Sample Data:       [ 30 samples by 12 sample variables ]
+    #tax_table()   Taxonomy Table:    [ 4942 taxa by 8 taxonomic ranks ]
+
+# and now we can save this new phyloseq object to file for later use:
+saveRDS(data.mintax5.excluded.phy, "otu_sum_min_5_excluded_4samples_phyloseq.RDS")
 
