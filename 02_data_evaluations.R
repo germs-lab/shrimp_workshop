@@ -41,36 +41,41 @@ data.phy
 # although we have already removed many low quality and errorness sequences (e.g., chimeras) during sequence processing. There could still be some left whe we made our OTU count table. 
 # these potentially errorness sequences would frequently be clustered into their own OTUs, resulting OTUs appeared to be rare (e.g., OTU_10 has a count of 1 in lp_11 only)
 # these OTUs could be really rare organisms. But for organisms this rare, they are not comparable among replicates of samples either. 
+# Therefore, I usually remove OTU's sum up to less than 5 across all samples before any downstream analyses
 
-test <- filter_taxa(data.phy, function(x) sum(x) == 1, T)
-head(otu_table(test))
-## get rid of any taxa that summing up to be less than 5 across all samples
-data.taxmin5.phy<-prune_taxa(taxa_sums(data.phy) >= 5, data.phy)
-data.taxmin5.phy<-prune_samples(sample_sums(data.taxmin5.phy) > 0, data.taxmin5.phy) #get rid of samples with all 0's, if it exists
-print("saving phyloseq object with taxa sum >= 5 across all samples to current directory ... ")
-saveRDS(data.taxmin5.phy, "taxsum_min5_sequence_phyloseq.RDS")
+data.mintax5.phy <- filter_taxa(data.phy, function(x) sum(x) >= 5, T)
 
-## save the histogram of sample sequencing depth distribution
-print("Generating histogram on sample sequencing depth to current directory ... ")
-pdf("data.taxmin5.sequencing_depth_hist.pdf")
-hist(sample_sums(data.taxmin5.phy), breaks = nsamples(data.taxmin5.phy)/2)
-dev.off()
+# if you check the minimal OTU sums across all samples, it should be 5. 
+min(taxa_sums(data.mintax5.phy))
 
-## calculate Good's coverage for each sample
-si <- data.frame(sample_sums(data.taxmin5.phy)) #get sample sums
-names(si) <- "sample_sums"
-totu<-t(data.frame(otu_table(data.phy))) #transpose subsetted otu table so that samples are in row
+# we can also save this phyloseq object for later use as well:
+saveRDS(data.mintax5.phy, "otu_sum_min_5_phyloseq.RDS")
 
-si$n1 <- rowSums(totu == 1) #counts of singletons in each sample
-si$C <- 1-(si$n1 / si$sample_sums) #calculate Good's coverage
-si$SAMPLES <- row.names(si)
-## save the sample coverage information to file
-print("Saving the sample coverage information as a text file in current directory ... ")
-write.table(si, "data.taxmin5.sample_goods_coverage.txt", sep = "\t", quote = F, row.names = F)
+##################################################
+# evaluating sequencing depth and coverage       #
+##################################################
+# the number of sequences per sample and how many OTUs were covered by the seuqencing can skew your community analyses. 
+# I usually do a quick evaluation of sequencing depth and sequencing coverage to remove any samples that were not adequately sequenced. 
+# the below histogram plots the distribution of sample sequencing depths. 
+hist(sample_sums(data.mintax5.phy), breaks = nsamples(data.mintax5.phy)/2)
+    # and we can see that majority the samples have ~20k sequences, but 2 samples have less than 10K sequences.
+    # the samples that were less than 10k may not be adequately sequenced. 
+
+# therefore, we need to double check the sequence coverage as well. 
+# We use Good's Estimate of Coverage to evaluate how well each sample's community was covered by sequencing. 
+# calculate Good's coverage for each sample
+ssum <- data.frame(sample_sums(data.mintax5.phy)) #get sample sums
+names(ssum) <- "sample_sums"
+totu<-t(data.frame(otu_table(data.mintax5.phy))) #transpose subsetted otu table so that samples are in row
+
+ssum$n1 <- rowSums(totu == 1) #counts of singletons in each sample
+ssum$C <- 1-(ssum$n1 / ssum$sample_sums) #calculate Good's coverage
 
 ## plot Good's coverage histogram
-print("Generating histogram on Good's estimated coverage to current directory ... ")
-pdf("data.taxmin5.goods_coverage_hist.pdf")
-hist(si$C, breaks = nrow(si)/2)
-dev.off()
+hist(ssum$C, breaks = nrow(ssum)/2)
+
+## plot Good's coverage VS. sequencing depth
+plot(C ~ sample_sums, data = ssum, ylim= c(0, 1))
+
+# and we can see that although some of the samples have <10k sequences, they were still well covered. 
 
