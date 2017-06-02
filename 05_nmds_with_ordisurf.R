@@ -117,5 +117,5 @@ ggplot.NMDS.ordisurf.2f(data.mintax5.excluded.rela.mds, data.mintax5.excluded.re
     # "colors" is the color scheme generated in step 2    
     # "data.mintax5.excluded.rela.ordisurf" is the fitted measurement from step 2.     
     # "X..of.singletons" tells the plot what the legend title is for the fitted surface contour    
-    # see the resulted plot here:     
-    
+# you can see the plot generated from this example here:
+# https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/nmds_2factor_ordisurface_rk1.pdf      

@@ -89,5 +89,7 @@ ggplot.NMDS.ellipse.arrow(data.mintax5.excluded.rela.mds, data.mintax5.excluded.
     # "data.mintax5.excluded.rela.envfit" is the vector fitting table from step 2.
     # "data.mintax5.excluded.rela.si$Culture.media" is the column with experimental grouping information that we would like to draw ellipses for.
     # "colors" are the colors scheme we created for the experiment groups in "data.mintax5.excluded.rela.si$Culture.media"
-
+##
+# you can see the plot generated from this example here:
+# https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/nmds_ellipses_arrows_rk1.pdf
 

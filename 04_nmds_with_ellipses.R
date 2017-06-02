@@ -151,6 +151,9 @@ source("~/Documents/repos/shrimp_workshop/misc_codes/ggplot.NMDS.ellipse.R")
 
 # 6. plot it!
 ggplot.NMDS.ellipse(data.mintax5.excluded.rela.mds, data.mintax5.excluded.rela.si$Culture.media, colors)
+##
+# you can see the plot for the example here:
+# https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/nmds_ellipses_rk1.pdf
 
 # and you can repeat step 5 and 6 for other significant experimental factors (see step 3)
 
