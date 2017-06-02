@@ -1,6 +1,6 @@
 ##################################################
 ##						##
-## Customized plots using ggplot2               ##
+## Customized NMDS plots using ggplot2          ##
 ##						##
 ##################################################
 ## Author: Fan Yang
@@ -73,7 +73,7 @@ data.mintax5.excluded.rela.mds <- metaMDS(totu, autotransform = F, k = 3, trymax
 # "k" represents the number of dimention you would like to calculate to ensure a low stress score.
 # "trymax" sets how many iteration of calculation will be performed. When your communities are really different, the default iteration of 20 does not ensure a solution. Therefore, I set it as 100. 
 # Here is the site that explains NMDS really nicely: https://jonlefcheck.net/2012/10/24/nmds-tutorial-in-r/
-    #here is what the ouput looks like:
+    #here is what the output looks like:
     #> data.mintax5.excluded.rela.mds <- metaMDS(totu, autotransform = F, k = 3, trymax = 100)
     #Run 0 stress 0.05309471 
     #Run 1 stress 0.05531997 
@@ -132,6 +132,8 @@ saveRDS(data.mintax5.excluded.rela.mds, "otu_sum_min_5_excluded_4samples_relativ
 
 # 3. get the sample metadata from the same phyloseq object:
 data.mintax5.excluded.rela.si <- data.frame(sample_data(data.mintax5.excluded.rela.phy))
+# also save this for later use:
+saveRDS(data.mintax5.excluded.rela.si, "otu_sum_min_5_excluded_4samples_relative_abundance_metadata.RDS")
 
 # 4. load the plot function:
 source("~/Documents/repos/shrimp_workshop/misc_codes/ggplot.NMDS.ellipse.R")
@@ -152,45 +154,3 @@ ggplot.NMDS.ellipse(data.mintax5.excluded.rela.mds, data.mintax5.excluded.rela.s
 
 # and you can repeat step 5 and 6 for other significant experimental factors (see step 3)
 
-######################################################################
-# NMDS plot with ellipses and arrows                                 #
-######################################################################
-
-source("~/Documents/repos/shrimp_workshop/misc_codes/mds.envfit.arrows.R")
-data.mintax5.excluded.rela.envfit <- mds.envfit.arrows(data.mintax5.excluded.rela.mds, data.mintax5.excluded.rela.si[, c("DNA.concentration", "X..of.reads", "X..of.singletons", "SAMPLES")], "SAMPLES")
-
-source("~/Documents/repos/shrimp_workshop/misc_codes/ggplot.NMDS.ellipse.arrow.R")
-ggplot.NMDS.ellipse.arrow(data.mintax5.excluded.rela.mds, data.mintax5.excluded.rela.envfit, data.mintax5.excluded.rela.si$Culture.media, colors)
-
-######################################################################
-# NMDS plot with ordisurfaces                                        #
-######################################################################
-# using "DNA.concentration" as an example
-
-source("~/Documents/repos/shrimp_workshop/misc_codes/ordi.sf.R")
-data.mintax5.excluded.rela.ordisurf <- ordi.sf(data.mintax5.excluded.rela.mds, data.mintax5.excluded.rela.si[, c("DNA.concentration", "SAMPLES")], "SAMPLES")
-    #> data.mintax5.excluded.rela.ordisurf <- ordi.sf(data.mintax5.excluded.rela.mds, data.mintax5.excluded.rela.si[, c("DNA.concentration", "SAMPLES")], "SAMPLES")
-    #
-    #Family: quasipoisson 
-    #Link function: log 
-    #
-    #Formula:
-    #y ~ s(x1, x2, k = 10, bs = "tp", fx = FALSE)
-    #
-    #Parametric coefficients:
-    #            Estimate Std. Error t value Pr(>|t|)    
-    #(Intercept)   2.7760     0.1258   22.07   <2e-16 ***
-    #---
-    #Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-    #
-    #Approximate significance of smooth terms:
-    #           edf Ref.df     F p-value    
-    #s(x1,x2) 6.519      9 54.65  <2e-16 ***
-    #---
-    #Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-    #
-    #R-sq.(adj) =  0.926   Deviance explained = 96.8%
-    #-REML = 49.157  Scale est. = 4.7159    n = 30
-    #
-source("~/Documents/repos/shrimp_workshop/misc_codes/ggplot.NMDS.ordisurf.2f.R")
-ggplot.NMDS.ordisurf.2f(data.mintax5.excluded.rela.mds, data.frame(data.mintax5.excluded.rela.si$Variable, data.mintax5.excluded.rela.si$DNA.concentration), colors, data.mintax5.excluded.rela.ordisurf, "DNA.concentration")
