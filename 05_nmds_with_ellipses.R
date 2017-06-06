@@ -32,7 +32,7 @@ library(RColorBrewer)
 ######################################################################
 # load the phyloseq object with relative abundance                   #
 ######################################################################
-# if you recall, in step 3, we save a phyloseq object with relative abundance to the working directory using command: saveRDS(data.mintax5.excluded.rela.phy, "otu_sum_min_5_excluded_4samples_relative_abundance_phyloseq.RDS")
+# if you recall, in step 4, we save a phyloseq object with relative abundance to the working directory using command: saveRDS(data.mintax5.excluded.rela.phy, "otu_sum_min_5_excluded_4samples_relative_abundance_phyloseq.RDS")
 # again, you can also use the saved rarefied phyloseq object. 
 # but for the demonstration purpose, I'm going to use the relative abundance phyloseq object.
 

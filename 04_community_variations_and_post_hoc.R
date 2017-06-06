@@ -121,3 +121,7 @@ names(df)<-c("factor", "rela.F.model", "rela.adonis_R2", "rela.Pr(>F)") #add mea
     ##
     # the results suggest that all pairs were contributing to the community variations observed significantly. 
     # and "T0 VS Nutrients" was describing 71% of the community variations. 
+
+# 5. let's save this table for later reporting as well.
+write.table(df, "permanova_post_hoc_relative_abundance_pairwised.txt", sep="\t", row.names=F, quote=F)
+
