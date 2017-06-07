@@ -77,5 +77,8 @@ t0.nutrients.dds <- phyloseq_to_deseq2(t0.nutrients, ~ Variable)
 	#rowRanges metadata column names(0):
 	#colnames(14): lp_15 lp_16 ... lp_8 lp_9
 	#colData names(12): CIBNOR_id Sample_id ... Experiment SAMPLES
-
+# we will also save the this DESeq2 object to file for later use:
 saveRDS(t0.nutrients.dds, "t0.nutirents.dds.RDS")
+# you can load it like this:
+t0.nutrients.dds <- readRDS("t0.nutirents.dds.RDS")
+
