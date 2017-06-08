@@ -19,7 +19,8 @@ setwd("~/Box sync/Mexico/paola/data_for_R/rk1")
 #####################
 library(plyr)
 library(ggplot2)
-library(RColorBrewer)
+library(RColorBrewer):39
+
 # you can also use package `dplyr`. You can find the tutorial here: http://tracykteal.github.io/R-genomics/04-dplyr.html
 # `dplyr` is the newer version of `plyr` and the two overlap quite a bit. 
 # load either `dplyr` or `plyr`, not both. 
@@ -38,14 +39,8 @@ dim(t0.nutrients.res.sig)
     #[1] 680  15
 
 #################################
-# data reduction                #
+# plot                          #
 #################################
-# as we can see, there are 680 different OTUs that were significantly different in abundance in "Nutrients" and "T0". 
-# There are too many of them to plot all together.
-# so we will have to do some grouping
-##
-# in this example, I'll group everything by "phylum" by taking the average of OTUs "log2FoldChange" by positive numbers and negative numbers
-
 # 1. we need to have a column defines all positive numbers (more abundant in "Nutrients") and negative numbers (more abundant in "T0")
 t0.nutrients.res.sig$pos_neg <- ifelse(t0.nutrients.res.sig$log2FoldChange > 0, "positive", "negative")
 # and we can see the table now looks like this:
@@ -73,40 +68,36 @@ head(t0.nutrients.res.sig)
     #5     Spirochaetales  Spirochaetaceae Salinispira positive
     #6 Sphingobacteriales   Saprospiraceae   Lewinella positive
 
-# 2. group by "phylum" and "pos_neg" then take average of "log2FoldChange"
-res.sig.phylum <- ddply(t0.nutrients.res.sig, .(phylum, pos_neg), summarise, AVG = mean(log2FoldChange))
-# the size of the newly created table is:
-dim(res.sig.phylum)
-    #> dim(res.sig.phylum)              
-    #[1] 28  3
-# and it looks like this:
-head(res.sig.phylum)
-    #> head(res.sig.phylum)             
-    #          phylum  pos_neg       AVG
-    #1  Acidobacteria positive  4.578075
-    #2 Actinobacteria negative -5.292752
-    #3 Actinobacteria positive  5.091601
-    #4  Bacteroidetes negative -8.289403
-    #5  Bacteroidetes positive  3.622159
-    #6    Chloroflexi negative -5.088074
-
-# now everything is much smaller and we can visualize the differences quickly
-p1 <- ggplot(data=res.sig.phylum, aes(x=phylum, y=AVG, fill=pos_neg)) +
-    geom_bar(stat="identity") +
+# 2. plotting
+p1 <- ggplot(data=t0.nutrients.res.sig, aes(x=phylum, y=log2FoldChange)) +
+    geom_point(aes(color=pos_neg))+
     theme_bw() +
     theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) 
 p1
     # viola!
-    # now the make it even better, we can simply add things to "p1"
+    # now the make it even better by adding things to "p1"
 
-# 3. fine-tuning the plot
-# right now, the phyla are plotted in alphabetical order.
-# let's sort the phyla to be plotted from the most changes to the least
-# so we know that there are 28 rows in "res.sig.phylum"
-# However:
-length(unique(res.sig.phylum$phylum))
-    #> length(unique(res.sig.phylum$phylum))
-    #[1] 20
-    ##
-    # we can see that some phyla have both postive and negative numbers. 
-    # 
+# 3. fine-tuning
+# 3.1. we can add a line to emphasize "0"
+p3.1 <- p1 + geom_hline(yintercept=0)
+p3.1
+
+# 3.2. we can change the color of dots
+p3.2 <- p3.1 + scale_color_brewer(palette="Dark2")
+p3.2
+
+# 3.3. we can relabel the x and y axes
+p3.3 <- p3.2 + xlab("Bacterial Phyla") + ylab("Differences in Abundance (log2)")
+p3.3
+
+# 3.4. we can change the position of the legend
+p3.4 <- p3.3 + theme(legend.position = "top")
+p3.4
+
+# 3.5. change the size of the axis text and labels
+p3.5 <- p3.4 + theme(axis.text.x=element_text(size=12), axis.text.y=element_text(size =12), axis.title.x = element_text(face="bold", size =14), axis.title.y = element_text(face="bold", size = 14))
+p3.5
+
+# 3.6. we can also remove x-axis label
+p3.6 <- p3.5 + theme(axis.title.x = element_blank())
+p3.6
