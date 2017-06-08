@@ -76,28 +76,38 @@ p1 <- ggplot(data=t0.nutrients.res.sig, aes(x=phylum, y=log2FoldChange)) +
 p1
     # viola!
     # now the make it even better by adding things to "p1"
+# see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_1.pdf
 
 # 3. fine-tuning
 # 3.1. we can add a line to emphasize "0"
 p3.1 <- p1 + geom_hline(yintercept=0)
 p3.1
+# see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_3.1.pdf
 
 # 3.2. we can change the color of dots
 p3.2 <- p3.1 + scale_color_brewer(palette="Dark2")
 p3.2
+# see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_3.2.pdf
 
 # 3.3. we can relabel the x and y axes
 p3.3 <- p3.2 + xlab("Bacterial Phyla") + ylab("Differences in Abundance (log2)")
 p3.3
+# see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_3.3.pdf
 
 # 3.4. we can change the position of the legend
 p3.4 <- p3.3 + theme(legend.position = "top")
 p3.4
+# see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_3.4.pdf
 
 # 3.5. change the size of the axis text and labels
 p3.5 <- p3.4 + theme(axis.text.x=element_text(size=12), axis.text.y=element_text(size =12), axis.title.x = element_text(face="bold", size =14), axis.title.y = element_text(face="bold", size = 14))
 p3.5
+# see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_3.5.pdf
 
 # 3.6. we can also remove x-axis label
 p3.6 <- p3.5 + theme(axis.title.x = element_blank())
 p3.6
+# see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_3.6.pdf
+
+
+
