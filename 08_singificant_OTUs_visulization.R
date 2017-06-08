@@ -19,7 +19,8 @@ setwd("~/Box sync/Mexico/paola/data_for_R/rk1")
 #####################
 library(plyr)
 library(ggplot2)
-library(RColorBrewer):39
+library(RColorBrewer)
+library(phyloseq)
 
 # you can also use package `dplyr`. You can find the tutorial here: http://tracykteal.github.io/R-genomics/04-dplyr.html
 # `dplyr` is the newer version of `plyr` and the two overlap quite a bit. 
@@ -39,7 +40,7 @@ dim(t0.nutrients.res.sig)
     #[1] 680  15
 
 #################################
-# plot                          #
+# simple plot                          #
 #################################
 # 1. we need to have a column defines all positive numbers (more abundant in "Nutrients") and negative numbers (more abundant in "T0")
 t0.nutrients.res.sig$pos_neg <- ifelse(t0.nutrients.res.sig$log2FoldChange > 0, "positive", "negative")
@@ -110,4 +111,31 @@ p3.6
 # see example figure here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step2_3.6.pdf
 
 
+#################################################
+# use DESeq2 reults to guide data visualization #
+#################################################
+# just because an OTU were significantly more abundant in one condition than the other,
+# it does not mean it's abundant. 
+## 
+# I like to use the DESeq2 results as a statistical test result (like, anova, t-test, etc) to indicate what's significant
+# but plotting standardized abundance (ie, relative abundance or rarefied abundance) to actually show how abundant these OTUs are.
+# I will use relative abundance for the demo purpose.
+
+# 1. load relative abundance phyloseq object saved from step 3. 
+data.mintax5.excluded.rela.phy <- readRDS("otu_sum_min_5_excluded_4samples_relative_abundance_phyloseq.RDS")
+
+# 2. subset significantly different OTUs from "T0" and "Nutrients" in "Variables"
+# subset "T0" and "Nutrients" first
+t0.nutrient.sig.rela.phy <- subset_samples(data.mintax5.excluded.rela.phy, grepl("T0|Nutrients", Variable))
+t0.nutrient.sig.rela.phy <- prune_taxa(taxa_sums(t0.nutrient.sig.rela.phy) > 0,t0.nutrient.sig.rela.phy) 
+t0.nutrient.sig.rela.phy
+# subset significant OTUs
+t0.nutrient.sig.rela.phy <- subset_taxa(t0.nutrient.sig.rela.phy, taxa_names(t0.nutrient.sig.rela.phy) %in% t0.nutrients.res.sig$Row.names)
+# check
+t0.nutrient.sig.rela.phy
+    #> t0.nutrient.sig.rela.phy         
+    #phyloseq-class experiment-level object
+    #otu_table()   OTU Table:         [ 680 taxa and 14 samples ]
+    #sample_data() Sample Data:       [ 14 samples by 12 sample variables ]
+    #tax_table()   Taxonomy Table:    [ 680 taxa by 8 taxonomic ranks ]
 
