@@ -291,5 +291,123 @@ head(t0.nutrients.sig.rela.psmelt)
     # clearly, it's not pretty. There are too many genera and many of them are really low in relative abundance. 
     # we can subset the top 10 most abundant genera.
 
-    # 4.2.3. subset the top 10 most abundant genera. Similar to what we did in step 4.1.1-4.1.2.
-    # first, we find the average abundance of each genus across all samples 
+    # 4.2.3. subset the top 10 most abundant genera. Similar to what we did in step 4.1.1-4.1.2.    
+    # 4.2.3.1. we first find the total abundance of each genus, because we have two different experimental conditions here. The abundance in one condition is significantly different than the other. 
+    genus.total <- ddply(t0.nutrients.sig.genus, .(genus), summarise, total=sum(total_per_sample))
+    # and it looks like this:
+    head(genus.total)
+        #>     head(genus.total)            
+        #            genus        total
+        #1    Acholeplasma 0.0045038614
+        #2 Acidaminococcus 0.0155082153
+        #3   Acinetobacter 0.0007312346
+        #4      Actibacter 0.0033406087
+        #5     Agarivorans 0.0034503326
+        #6 Aliiroseovarius 0.0225167232
+    
+    # 4.2.3.2. now we sort "genus.total" by column "total" in descending order and get the top 10
+    genus.top10 <- genus.total[order(-genus.total$total), ][1:10, ]
+    # check the table
+    genus.top10
+        #>     genus.top10                  
+        #                               genus     total
+        #185                           Vibrio 3.7580607
+        #18         Clostridium sensu stricto 1.2509864
+        #157    unclassified_Fusobacteriaceae 0.9381947
+        #132       unclassified_Bacteroidales 0.8480429
+        #158 unclassified_Gammaproteobacteria 0.4037566
+        #92                     Prolixibacter 0.3707745
+        #141       unclassified_Clostridiales 0.3385759
+        #139    unclassified_Clostridiaceae 1 0.3077775
+        #80                        Oceanicola 0.2609854
+        #182        unclassified_Vibrionaceae 0.2352554
+
+    # 4.2.3.3. while we are here, we will set the genus plot order as well (ie most abundant first)
+    genus.top10$genus <- reorder(genus.top10$genus, -genus.top10$total)
+    # check the levels:
+    str(genus.top10)
+        #> str(genus.top10)
+        #'data.frame':   10 obs. of  2 variables:
+        # $ genus: Factor w/ 187 levels "Vibrio","Clostridium sensu stricto",..: 1 2 3 4 5 6 7 8 9 10
+        #  ..- attr(*, "scores")= num [1:187(1d)] NA NA NA NA NA NA NA NA NA NA ...
+        #  .. ..- attr(*, "dimnames")=List of 1
+        #  .. .. ..$ : chr  "Acholeplasma" "Acidaminococcus" "Acinetobacter" "Actibacter" ...
+        # $ total: num  3.758 1.251 0.938 0.848 0.404 ...
+    
+    # 4.2.3.4. subset the "t0.nutrients.sig.genus" table for the top 10 most abundant genera ("genus.top10") as the data to be plotted
+    t0.nutrients.sig.genus.top10 <- subset(t0.nutrients.sig.genus, genus %in% genus.top10$genus)
+    # check
+    head(t0.nutrients.sig.genus.top10)
+        #>     head(t0.nutrients.sig.genus.top10)
+        #                        genus SAMPLES  Variable     phylum total_per_sample
+        #239 Clostridium sensu stricto   lp_15        T0 Firmicutes     0.000000e+00
+        #240 Clostridium sensu stricto   lp_16        T0 Firmicutes     1.728833e-04
+        #241 Clostridium sensu stricto   lp_17        T0 Firmicutes     8.105698e-05
+        #242 Clostridium sensu stricto   lp_18        T0 Firmicutes     0.000000e+00
+        #243 Clostridium sensu stricto   lp_25 Nutrients Firmicutes     1.259420e-01
+        #244 Clostridium sensu stricto   lp_26 Nutrients Firmicutes     1.316113e-01
+    # and 
+    dim(t0.nutrients.sig.genus.top10)
+        #>     dim(t0.nutrients.sig.genus.top10)
+        #[1] 140   5
+    dim(t0.nutrients.sig.genus)
+        #>     dim(t0.nutrients.sig.genus)
+        #[1] 2618    5
+    ##
+    # everything looks right
+
+    # 4.2.3.5. order the genus plot order in table "t0.nutrients.sig.genus.top10"
+    t0.nutrients.sig.genus.top10$genus <- factor(t0.nutrients.sig.genus.top10$genus, levels=levels(genus.top10$genus))
+    # check
+    str(t0.nutrients.sig.genus.top10$genus)
+
+    # 4.2.3.6. if you have noticed in our previous plots, "Nutrients" is always plotted before "T0" because they are alphabetically ordered. To change this, we can do:
+    t0.nutrients.sig.genus.top10$Variable <- factor(t0.nutrients.sig.genus.top10$Variable, levels=c("T0", "Nutrients"))
+    # this specifies that you would like "T0" being plotted first, then "Nutrients". This is exactly what was happening in step 4.2.3.5, but in a more apparent way.
+    
+    # 4.2.3.7. now we are ready to plot
+    p4.2.3.7.1 <- ggplot(t0.nutrients.sig.genus.top10, aes(x = genus, y = total_per_sample, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
+    p4.2.3.7.1
+    # much better, right?
+    
+    # we can also show the phylum information. to do this, we will have to change the column "fill" information
+    p4.2.3.7.2 <- ggplot(t0.nutrients.sig.genus.top10, aes(x = genus, y = total_per_sample, fill=phylum)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
+    p4.2.3.7.2
+  
+    # but now we lose the "T0" and "Nutrients" information. So we will have to split the plots
+    p4.2.3.7.3 <- p4.2.3.7.2 + facet_wrap(~Variable)
+    p4.2.3.7.3   
+
+    # you can also display it in column
+    p4.2.3.7.4 <- p4.2.3.7.2 + facet_wrap(~Variable, ncol = 1)
+    p4.2.3.7.4   
+
+    # you can also split by phylum and Variable
+    p4.2.3.7.5 <- p4.2.3.7.2 + facet_grid(Variable~phylum)
+    p4.2.3.7.5   
+    # as you can see, `facet_grid` is very similar to `facet_wrap`. Try replacing `facet_wrap` in p4.2.3.7.3 and p4.2.3.74 with `facet_grid`. What do you see?
+    
+    # let's repeat p4.2.3.7.5 using `facet_wrap`
+    p4.2.3.7.6 <- p4.2.3.7.2 + facet_wrap(Variable~phylum, nrow = 2)
+    p4.2.3.7.6   
+    
+    # and we can drop the unused scales and genus in each grid.
+    # because the plot is large, we need to save it directly to file
+    pdf("~/Documents/repos/shrimp_workshop/example_figures/08_step4_4.2.3.7.7.pdf", height = 10, width=12) #height and width set the plot's height and width
+    p4.2.3.7.7 <- p4.2.3.7.2 + facet_wrap(Variable~phylum, nrow = 2, scale = "free")
+    p4.2.3.7.7   
+    dev.off() # don't forget this line! if you forget, you will overwrite your figures!
+
+    # or only make the y-axis the free scale. Also save it directly to file
+    pdf("~/Documents/repos/shrimp_workshop/example_figures/08_step4_4.2.3.7.8.pdf", height = 10, width=12)
+    p4.2.3.7.8 <- p4.2.3.7.2 + facet_wrap(Variable~phylum, nrow = 2, scale = "free_y")
+    p4.2.3.7.8   
+    dev.off() # don't forget this line! 
+   
+    # by now, you probably also see that if we split the plots by phylum, there is no need to color code them. Instead, we can color-code "T0" and "Nutrients". It may be more informative. 
+    p4.2.3.7.9 <- ggplot(t0.nutrients.sig.genus.top10, aes(x = genus, y = total_per_sample, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
+    pdf("~/Documents/repos/shrimp_workshop/example_figures/08_step4_4.2.3.7.9.pdf", height = 8, width=5)
+    p4.2.3.7.10 <- p4.2.3.7.9 + facet_wrap(~phylum, nrow = 2, scale = "free_x")
+    p4.2.3.7.10   
+    dev.off() # don't forget this line! 
+     
