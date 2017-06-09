@@ -1,4 +1,3 @@
-c
 ##												##
 ## Data wrangling and visulization on 			##
 ## OTUs with significantly different 			##
@@ -261,7 +260,7 @@ head(t0.nutrients.sig.rela.psmelt)
 		# again, average "Abundance" was shown
 
 	# we should add errobars
-	p4.1.3.3 <- p4.1.3.2 + stat_summary(fun.data = mean_se geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
+	p4.1.3.3 <- p4.1.3.2 + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
 	p4.1.3.3
 	
 	# we can see that some T0 OTUs are really small, we can plot them separately
@@ -287,6 +286,10 @@ head(t0.nutrients.sig.rela.psmelt)
         #6 Acholeplasma   lp_26 Nutrients Tenericutes     0.0008892653
     
     # 4.2.2. now let's plot it
-    p4.2.2.1 <- ggplot(t0.nutrients.sig.genus, aes(x = genus, y = total_per_sample, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5))
+    p4.2.2.1 <- ggplot(t0.nutrients.sig.genus, aes(x = genus, y = total_per_sample, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
     p4.2.2.1
+    # clearly, it's not pretty. There are too many genera and many of them are really low in relative abundance. 
+    # we can subset the top 10 most abundant genera.
 
+    # 4.2.3. subset the top 10 most abundant genera. Similar to what we did in step 4.1.1-4.1.2.
+    # first, we find the average abundance of each genus across all samples 
