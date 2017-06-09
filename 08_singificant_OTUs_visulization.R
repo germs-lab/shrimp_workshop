@@ -228,7 +228,8 @@ head(t0.nutrients.sig.rela.psmelt)
 	# 4.1.3. now we can plot
 	p4.1.3.1 <- ggplot(t0.nutrients.sig.rela.top10, aes(x = OTU, y = Abundance, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5))
 	p4.1.3.1
-		# we can see that ggplot2 can calculate average of "Abundance" for each "OTU" across all samples. 
+        # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.1.3.1.pdf
+		# we can see that ggplot2 can calculate average of "Abundance" for each "OTU" across all samples using function `stat_summary`. 
 
 
 
@@ -257,15 +258,18 @@ head(t0.nutrients.sig.rela.psmelt)
 	# replot:
 	p4.1.3.2 <- ggplot(t0.nutrients.sig.rela.top10, aes(x = OTU, y = Abundance, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5))
 	p4.1.3.2
+        # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.1.3.2.pdf
 		# again, average "Abundance" was shown
 
 	# we should add errobars
 	p4.1.3.3 <- p4.1.3.2 + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
 	p4.1.3.3
+        # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.1.3.3.pdf
 	
-	# we can see that some T0 OTUs are really small, we can plot them separately
+        # we can see that some T0 OTUs are really small, we can plot them separately and with free x and y scales. 
 	p4.1.3.4 <- p4.1.3.3 + facet_wrap(~Variable, scale="free")
 	p4.1.3.4
+        # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.1.3.4.pdf
 
 ###################################
 # 4.2 grouping by genus           # 
@@ -288,6 +292,7 @@ head(t0.nutrients.sig.rela.psmelt)
     # 4.2.2. now let's plot it
     p4.2.2.1 <- ggplot(t0.nutrients.sig.genus, aes(x = genus, y = total_per_sample, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
     p4.2.2.1
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.2.pdf
     # clearly, it's not pretty. There are too many genera and many of them are really low in relative abundance. 
     # we can subset the top 10 most abundant genera.
 
@@ -368,28 +373,34 @@ head(t0.nutrients.sig.rela.psmelt)
     # 4.2.3.7. now we are ready to plot
     p4.2.3.7.1 <- ggplot(t0.nutrients.sig.genus.top10, aes(x = genus, y = total_per_sample, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
     p4.2.3.7.1
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.1.pdf
     # much better, right?
     
     # we can also show the phylum information. to do this, we will have to change the column "fill" information
     p4.2.3.7.2 <- ggplot(t0.nutrients.sig.genus.top10, aes(x = genus, y = total_per_sample, fill=phylum)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
     p4.2.3.7.2
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.2.pdf
   
     # but now we lose the "T0" and "Nutrients" information. So we will have to split the plots
     p4.2.3.7.3 <- p4.2.3.7.2 + facet_wrap(~Variable)
     p4.2.3.7.3   
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.3.pdf
 
     # you can also display it in column
     p4.2.3.7.4 <- p4.2.3.7.2 + facet_wrap(~Variable, ncol = 1)
     p4.2.3.7.4   
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.4.pdf
 
     # you can also split by phylum and Variable
     p4.2.3.7.5 <- p4.2.3.7.2 + facet_grid(Variable~phylum)
     p4.2.3.7.5   
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.5.pdf
     # as you can see, `facet_grid` is very similar to `facet_wrap`. Try replacing `facet_wrap` in p4.2.3.7.3 and p4.2.3.74 with `facet_grid`. What do you see?
     
     # let's repeat p4.2.3.7.5 using `facet_wrap`
     p4.2.3.7.6 <- p4.2.3.7.2 + facet_wrap(Variable~phylum, nrow = 2)
     p4.2.3.7.6   
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.6.pdf
     
     # and we can drop the unused scales and genus in each grid.
     # because the plot is large, we need to save it directly to file
@@ -397,12 +408,14 @@ head(t0.nutrients.sig.rela.psmelt)
     p4.2.3.7.7 <- p4.2.3.7.2 + facet_wrap(Variable~phylum, nrow = 2, scale = "free")
     p4.2.3.7.7   
     dev.off() # don't forget this line! if you forget, you will overwrite your figures!
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.7.pdf
 
     # or only make the y-axis the free scale. Also save it directly to file
     pdf("~/Documents/repos/shrimp_workshop/example_figures/08_step4_4.2.3.7.8.pdf", height = 10, width=12)
     p4.2.3.7.8 <- p4.2.3.7.2 + facet_wrap(Variable~phylum, nrow = 2, scale = "free_y")
     p4.2.3.7.8   
     dev.off() # don't forget this line! 
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.8.pdf
    
     # by now, you probably also see that if we split the plots by phylum, there is no need to color code them. Instead, we can color-code "T0" and "Nutrients". It may be more informative. 
     p4.2.3.7.9 <- ggplot(t0.nutrients.sig.genus.top10, aes(x = genus, y = total_per_sample, fill=Variable)) + stat_summary(fun.y = mean, geom="bar", position="dodge") + theme_bw() + theme(axis.text.x=element_text(angle=90, hjust = 1, vjust = 0.5)) + stat_summary(fun.data = mean_se, geom="errorbar", position = position_dodge(width = 0.90), width = 0.2)	
@@ -410,4 +423,5 @@ head(t0.nutrients.sig.rela.psmelt)
     p4.2.3.7.10 <- p4.2.3.7.9 + facet_wrap(~phylum, nrow = 2, scale = "free_x")
     p4.2.3.7.10   
     dev.off() # don't forget this line! 
+    # see example plot here: https://github.com/germs-lab/shrimp_workshop/blob/master/example_figures/08_step4_4.2.3.7.10.pdf
      
