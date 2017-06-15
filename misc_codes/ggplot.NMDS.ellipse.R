@@ -20,7 +20,7 @@ veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100){
 }
 
 df_ell <- data.frame()
-for(g in levels(NMDS.narm$Treatment)){
+for(g in unique(NMDS.narm$Treatment)){
     df_ell <- rbind(df_ell, cbind(as.data.frame(with(NMDS.narm[NMDS.narm$Treatment==g,],
                     veganCovEllipse(cov.wt(cbind(MDS1,MDS2),wt=rep(1/length(MDS1),length(MDS1)))$cov,center=c(mean(MDS1),mean(MDS2)))))
                     ,group=g))
