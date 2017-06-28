@@ -106,7 +106,7 @@ t0.nutrients.dds <- DESeq(t0.nutrients.dds, test="Wald", fitType="parametric")
         #> levels(t0.nutrients.dds$Variable)
         #[1] "Nutrients" "T0"    
 		##
-        # therefore,the comparison will be comparing the OTU abundances in "Nutrients" to the OTU abundances in "T0"
+        # therefore,the comparison will be comparing the OTU abundances in "T0" to OTU abundances in "Nutrients".
 	
 # get the results into a readable table format:
 t0.nutrients.res <- data.frame(results(t0.nutrients.dds, cooksCutoff=F))
@@ -129,10 +129,19 @@ head(t0.nutrients.res)
     #OTU_1007           NA
 	##
 	# the significance of the differences for each OTU is displayed in column "padj"
-    # the column "log2FoldChange" shows how different the OTU abundances were in "Nutrients" vs. "T0" in log2 format
-    # a positive number means it's more abundant in "Nutrients"
-    # a negative number means it's more abundant in "T0"
-
+    # the column "log2FoldChange" shows how different the OTU abundances were in "T0" vs. "Nutrients" in log2 format
+    # a negative number means it's more abundant in "Nutrients"
+    # a positive number means it's more abundant in "T0"
+# if you would like to specify how experimental levels are compared, you can use the code below, which produce exact same result as the above code.
+t0.nutrients.res <- data.frame(results(t0.nutrients.dds, cooksCutoff=F, contrast = c("Variable", "T0", "Nutrients"))
+    # This specifies the comparison using `contrast`.
+    # In `contrast`:
+        # "Variable" is the column in "t0.nutrients.dds" with levels that we would like to compare
+        # "T0" is experimental level we would like to compare to (base)
+        # "Nutrients" is the experiment level we would like to evaluate against "T0"
+    # if you want to compare "T0" to "Nutrients", you can swap the position of "T0" and "Nutrients", which looks like this:
+        `t0.nutrients.res <- data.frame(results(t0.nutrients.dds, cooksCutoff=F, contrast = c("Variable", "Nutrients", "T0"))`
+    
 # subset for "padj" less than 0.05:
 t0.nutrients.res.sig <- subset(t0.nutrients.res, padj < 0.05) 
 # and now it looks like this:
