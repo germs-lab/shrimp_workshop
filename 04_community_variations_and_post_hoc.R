@@ -42,37 +42,35 @@ data.mintax5.excluded.rela.phy
 # The following analysis uses standardized OTU counts. 
 # either rarefied or relative abundance works. 
 # For the example, I'll use the relative abundance phyloseq object we generated.
-# first, calculate how different the samples are based on their community structures
-rela.dist = phyloseq::distance(data.mintax5.excluded.rela.phy, "bray")
-    # "bray" means we are using bray-curtis distance, which weights in individual OTU abundance for distance calculation.
 
-# second, determine which experimental factor you would like to look into:
+# first, determine which experimental factor you would like to look into:
 head(sample_data(data.mintax5.excluded.rela.phy))
     # and we can see that columns "Culture.media", "Variable", and "Replicate" are the experimental factors that could influence the community distance.
 
-# third, calculate the experimental factor effects using PERMANOVA.
-adonis(rela.dist ~ Culture.media + Variable + as.factor(Replicate), perm=9999,as(sample_data(data.mintax5.excluded.rela.phy),"data.frame"))
-    # we have to use "as.factor" for column "Replicate", becase column "Replicate" only has numbers. R automatically take a column with all numbers as numeric vector. 
-    ###########
-    #########and we can see the results are:
-    #> adonis(rela.dist ~ Culture.media + Variable + as.factor(Replicate), perm=9999,as(sample_data(data.mintax5.excluded.rela.phy,),"data.frame"))
-    #
-    #Call:
-    #adonis(formula = rela.dist ~ Culture.media + Variable + as.factor(Replicate),      data = as(sample_data(data.mintax5.excluded.rela.phy, ),          "data.frame"), permutations = 9999) 
-    #
-    #Permutation: free
-    #Number of permutations: 9999
-    #
-    #Terms added sequentially (first to last)
-    #
-    #                     Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
-    #Culture.media         2    2.7225 1.36125 12.1448 0.29864 0.0001 ***
-    #Variable              2    3.7229 1.86144 16.6074 0.40838 0.0001 ***
-    #as.factor(Replicate)  4    0.3171 0.07928  0.7073 0.03478 0.8353    
-    #Residuals            21    2.3538 0.11208         0.25820           
-    #Total                29    9.1163                 1.00000           
-    #---
-    #Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# second, calculate the experimental factor effects using PERMANOVA. Because we want to see the effect of each experimental factor alone, we will use a for loop:
+cn<-c("Culture.media", "Variable", "Replicate") #column names of the factors we are interested in. 
+si <- data.frame(sample_data(data.mintax5.excluded.rela.phy)) #get the metadata from phyloseq object.
+df<-data.frame()
+for (i in cn){
+        tryCatch({
+		temp.phy <- subset_samples(data.mintax5.excluded.rela.phy, !is.na(si[, i]))
+		temp.phy <- prune_taxa(taxa_sums(temp.phy) >0, temp.phy)
+		temp.totu<-t(data.frame(otu_table(temp.phy)))
+		temp.si<-data.frame(sample_data(temp.phy))
+		results.rela<-adonis(temp.totu ~ as.factor(temp.si[, i]))
+		df1<-data.frame(i, results.rela$aov.tab[4][1, ], results.rela$aov.tab[5][1, ], results.rela$aov.tab[6][1, ])
+		temp.totu.trans<-decostand(temp.totu, "pa")
+		results.pa<-adonis(temp.totu.trans ~ as.factor(temp.si[, i]))
+		df2<-data.frame(i, results.rela$aov.tab[4][1, ], results.pa$aov.tab[5][1, ], results.pa$aov.tab[6][1, ])
+		df.temp<-cbind(df1,df2)
+		df<-rbind(df, df.temp)
+		}, error=function(e){cat("ERROR :", conditionMessage(e), "\n")})
+}
+names(df)<-c("factor", "rela.F.model", "rela.adonis_R2", "rela.Pr(>F)", "factor", "pa.F.model", "pa.adonis_R2", "pa.Pr(>F)")
+    # PERMANOVA (function `adonis`) does not like NA's.
+    # the above code removes NA's from each experimental factor (if there is any)
+    # then pull the F value, R2, and P value from the anova table output. 
+    # The code evaluates the factor effects based on relative abundance (rela.) of OTUs and the presence and absence of OTUs (pa.).
         # the result says:
         # Different sample grouns in both "Culture.media" and "Variable" have significantly different communities (Pr (>F)).
         # "Variable" describes 40.838% of the community variance. "Culture.media" describes 29.864% of the community variance (R2)
