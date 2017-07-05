@@ -1,5 +1,4 @@
----
-title: Shrimp Metagenomic Workshop
+Shrimp Metagenomic Workshop
 ---
 
 This repository contains workshop (May 2017) materials and customized R scripts for community analysis and visualization. 
